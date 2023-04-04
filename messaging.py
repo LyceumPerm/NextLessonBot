@@ -4,7 +4,7 @@ import xlwt
 import xlrd
 from time import sleep
 
-ADMIN_ID = 532081536
+ADMIN_ID =
 bot = telebot.TeleBot('',skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 allowedusers = [[0, 0]]
