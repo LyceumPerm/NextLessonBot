@@ -173,7 +173,6 @@ def send_schedule():
             update_schedule()
             get_schedule(weekday)
             update_users()
-            print("14:10", allowedusers)
             g1 = A1[3]
             g2 = A2[3]
             send_next_lesson(g1, g2)
