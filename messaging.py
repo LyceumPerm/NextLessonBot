@@ -4,8 +4,8 @@ import xlwt
 import xlrd
 from time import sleep
 
-ADMIN_ID = 532081536
-bot = telebot.TeleBot('5822154634:AAETSJyDrTDUWRjQVbX8HbxF9CakWSg4Izo', skip_pending=True)
+ADMIN_ID = 
+bot = telebot.TeleBot('', skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 allowedusers = [[0, 0]]
 ur = xlrd.open_workbook("users.xls")
