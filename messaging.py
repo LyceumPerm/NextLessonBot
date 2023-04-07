@@ -40,7 +40,7 @@ def start(message):
 @bot.message_handler(commands=['users'])
 def users(message):
     if message.from_user.id == ADMIN_ID:
-        bot.send_document(ADMIN_ID, open("users.txt", 'rb'))
+        bot.send_document(ADMIN_ID, open("users.xls", 'rb'))
 
 
 @bot.message_handler(commands=['logs'])
