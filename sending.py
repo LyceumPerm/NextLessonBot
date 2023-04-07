@@ -154,7 +154,7 @@ def send_schedule():
             g2 = A2[0]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "10:30":
+        elif current_time == "10:25":
             update_schedule()
             get_schedule(weekday)
             update_users()
@@ -162,7 +162,7 @@ def send_schedule():
             g2 = A2[1]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "12:20":
+        elif current_time == "12:15":
             update_schedule()
             get_schedule(weekday)
             update_users()
@@ -170,7 +170,7 @@ def send_schedule():
             g2 = A2[2]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "14:10":
+        elif current_time == "14:05":
             update_schedule()
             get_schedule(weekday)
             update_users()
@@ -181,5 +181,8 @@ def send_schedule():
 
 
 while True:
-    send_schedule()
-    sleep(30)
+    try:
+        send_schedule()
+        sleep(30)
+    except Exception as e:
+        logging.error("sending error"+str(e))
