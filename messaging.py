@@ -4,8 +4,8 @@ import xlwt
 import xlrd
 from time import sleep
 
-ADMIN_ID =
-bot = telebot.TeleBot('',skip_pending=True)
+ADMIN_ID = 0
+bot = telebot.TeleBot('', skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 allowedusers = [[0, 0]]
 ur = xlrd.open_workbook("users.xls")
@@ -19,13 +19,9 @@ for i in range(len(userslist)):
 logging.info("start bot")
 
 
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(commands=['start'])
 def start(message):
-    logging.info("user message:" + message.text + ":" + str(message.from_user.first_name) + " " + str(
-        message.from_user.last_name) + ":" + str(
-        message.from_user.username) + ":" + str(message.from_user.id))
-    if message.text == "/start" and not (
-            ([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
+    if not (([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
         keyboard = telebot.types.InlineKeyboardMarkup()
         key_g1 = telebot.types.InlineKeyboardButton(text='1', callback_data='change group 1')
         key_g2 = telebot.types.InlineKeyboardButton(text='2', callback_data='change group 2')
@@ -37,16 +33,27 @@ def start(message):
                               "пришлось искать расписание. Кроме того, бот постоянно обновляет расписание, "
                               "поэтому ты будешь в курсе изменений.\n" + "Если хочешь зарегестрироваться, укажи группу",
                          reply_markup=keyboard)
-    elif message.text == "/start":
+    else:
         bot.send_message(message.from_user.id, "Вы уже зарегестрированы")
-    elif message.text == "/users" and message.from_user.id == ADMIN_ID:
+
+
+@bot.message_handler(commands=['users'])
+def users(message):
+    if message.from_user.id == ADMIN_ID:
         bot.send_document(ADMIN_ID, open("users.txt", 'rb'))
-    elif message.text == "/logs" and message.from_user.id == ADMIN_ID:
+
+
+@bot.message_handler(commands=['logs'])
+def logs(message):
+    if message.from_user.id == ADMIN_ID:
         bot.send_document(ADMIN_ID, open("logs.log", 'rb'))
-    elif message.text == "/settings" and not (
-            ([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
+
+
+@bot.message_handler(commands=['settings'])
+def settings(message):
+    if not (([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
         bot.send_message(message.from_user.id, "Вы еще не зарегестрированы")
-    elif message.text == "/settings":
+    else:
         u = "0"
         for i in allowedusers:
             if i[0] == message.from_user.id:
@@ -125,7 +132,8 @@ def callback_worker(call):
         rewrite_users()
         bot.send_message(call.message.chat.id, "Готово")
         logging.info(
-            "user chose group 2:" + str(call.message.chat.first_name)+" " + str(call.message.chat.last_name) + ":" + str(
+            "user chose group 2:" + str(call.message.chat.first_name) + " " + str(
+                call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
 
 
