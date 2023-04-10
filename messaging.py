@@ -30,9 +30,7 @@ logging.info("start bot")
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    logging.info(
-        "user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
-            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
+    log_message(message)
     if not (([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
         keyboard = telebot.types.InlineKeyboardMarkup()
         key_g1 = telebot.types.InlineKeyboardButton(text='1', callback_data='change group 1')
@@ -51,27 +49,21 @@ def start(message):
 
 @bot.message_handler(commands=['users'])
 def users(message):
-    logging.info(
-        "user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
-            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
+    log_message(message)
     if message.from_user.id == ADMIN_ID:
         bot.send_document(ADMIN_ID, open("users.xls", 'rb'))
 
 
 @bot.message_handler(commands=['logs'])
 def logs(message):
-    logging.info(
-        "user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
-            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
+    log_message(message)
     if message.from_user.id == ADMIN_ID:
         bot.send_document(ADMIN_ID, open("logs.log", 'rb'))
 
 
 @bot.message_handler(commands=['settings'])
 def settings(message):
-    logging.info(
-        "user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
-            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
+    log_message(message)
     if not (([message.from_user.id, 1] in allowedusers) or ([message.from_user.id, 2] in allowedusers)):
         bot.send_message(message.from_user.id, "Вы еще не зарегестрированы")
     else:
@@ -157,11 +149,13 @@ def callback_worker(call):
                 call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
 
+
 @bot.message_handler(content_types=['text'])
 def text(message):
-    logging.info("user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
-            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
-    bot.send_message(message.from_user.id, "Что вы хотите сделать?\n"+"/start - регистрация\n"+"/settings - настройки")
+    log_message(message)
+    bot.send_message(message.from_user.id,
+                     "Что вы хотите сделать?\n" + "/start - регистрация\n" + "/settings - настройки")
+
 
 def rewrite_users():
     l = len(allowedusers)
@@ -177,6 +171,11 @@ def rewrite_users():
             del allowedusers[i]
             l -= 1
     uw.save("users.xls")
+
+
+def log_message(m):
+    logging.info("user message: " + m.text + " : " + str(m.from_user.first_name) + " " + str(
+        m.from_user.last_name) + " : " + str(m.from_user.username) + " : " + str(m.from_user.id))
 
 
 while True:

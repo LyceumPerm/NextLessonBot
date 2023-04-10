@@ -21,6 +21,17 @@ A2 = [["" for k in range(2)] for l in range(4)]
 allowedusers = [[0, 0]]
 
 
+def find_index(workbook):
+    s = workbook.sheet_names()
+    index = -1
+    for i in range(len(s)):
+        if MONDAY in s[i]:
+            index = i
+            break
+    if index != -1:
+        return index
+
+
 def update_schedule():
     if os.path.isfile("Schedule.xlsx"):
         os.remove("Schedule.xlsx")
@@ -48,27 +59,19 @@ def update_users():
     logging.info("users updated")
 
 
-def isMerged(r, c):
+def is_merged(r, c):
     wb1 = xlrd.open_workbook("Schedule.xlsx")
-    s1 = wb1.sheet_names()
-    for i in range(len(s1)):
-        if MONDAY in s1[i]:
-            sheet1 = wb1.sheet_by_index(i)
-            break
+    sheet1 = wb1.sheet_by_index(find_index(wb1))
     m = sheet1.merged_cells
     return (r, r + 1, c - 1, c + 1) in m
 
 
 def get_schedule(weekday):
     wb = xlrd.open_workbook("Schedule.xlsx")
-    s = wb.sheet_names()
-    for i in range(len(s)):
-        if MONDAY in s[i]:
-            sheet = wb.sheet_by_index(i)
-            break
+    sheet = wb.sheet_by_index(find_index(wb))
     for i in range(4):
         k = sheet.row_values(3 + 5 * weekday + i)[60]
-        if isMerged(3 + weekday * 5 + i, 59):
+        if is_merged(3 + weekday * 5 + i, 59):
             l = sheet.row_values(3 + weekday * 5 + i)[58]
             if l.find("(") == -1:
                 A1[i][0] = l.strip()
