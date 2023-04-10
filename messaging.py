@@ -11,8 +11,7 @@ TOKEN = t.readline().strip()
 admin.close()
 t.close()
 bot = telebot.TeleBot(TOKEN, skip_pending=True)
-logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
-                    encoding="utf8")
+logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s', encoding="utf8")
 allowedusers = [[0, 0]]
 try:
     ur = xlrd.open_workbook("users.xls")

@@ -10,8 +10,7 @@ t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
 bot = telebot.TeleBot(TOKEN)
 t.close()
-logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
-                    encoding="utf8")
+logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s', encoding="utf8")
 
 LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
 MONDAY = "10.04"
