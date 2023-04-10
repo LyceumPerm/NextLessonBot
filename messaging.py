@@ -8,6 +8,8 @@ admin = open("ADMIN_ID.txt")
 ADMIN_ID = int(admin.readline().strip())
 t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
+admin.close()
+t.close()
 bot = telebot.TeleBot(TOKEN, skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
                     encoding="utf8")
@@ -155,6 +157,11 @@ def callback_worker(call):
                 call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
 
+@bot.message_handler(content_types=['text'])
+def text(message):
+    logging.info("user message: " + message.text + " : " + str(message.from_user.first_name) + " " + str(
+            message.from_user.last_name) + " : " + str(message.from_user.username) + " : " + str(message.from_user.id))
+    bot.send_message(message.from_user.id, "Что вы хотите сделать?\n"+"/start - регистрация\n"+"/settings - настройки")
 
 def rewrite_users():
     l = len(allowedusers)

@@ -9,6 +9,7 @@ import logging
 t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
 bot = telebot.TeleBot(TOKEN)
+t.close()
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
                     encoding="utf8")
 
@@ -53,8 +54,7 @@ def isMerged(r, c):
     for i in range(len(s1)):
         if MONDAY in s1[i]:
             sheet1 = wb1.sheet_by_index(i)
-        else:
-            logging.error("schedule error")
+            break
     m = sheet1.merged_cells
     return (r, r + 1, c - 1, c + 1) in m
 
@@ -65,8 +65,7 @@ def get_schedule(weekday):
     for i in range(len(s)):
         if MONDAY in s[i]:
             sheet = wb.sheet_by_index(i)
-        else:
-            logging.error("schedule error")
+            break
     for i in range(4):
         k = sheet.row_values(3 + 5 * weekday + i)[60]
         if isMerged(3 + weekday * 5 + i, 59):
@@ -119,12 +118,12 @@ def send_next_lesson(g1, g2):
         for i in allowedusers:
             if i[1] == 1:
                 bot.send_message(i[0], g1[0] + " в " + g1[1])
-            logging.info("lesson sended to" + str(i[0]))
+                logging.info("lesson sended to" + str(i[0]))
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
                 bot.send_message(i[0], g2[0] + " в " + g2[1])
-            logging.info("lesson sended to" + str(i[0]))
+                logging.info("lesson sended to" + str(i[0]))
 
 
 def send_schedule():
@@ -146,6 +145,7 @@ def send_schedule():
                                      A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
                                      A1[2][1] + "]\n4. "
                                      + A1[3][0] + " [" + A1[3][1] + "]\n")
+                    logging.info("morning schedule sended to" + str(i[0]))
                 elif i[1] == 2:
                     bot.send_message(i[0],
                                      "Расписание на сегодня:\n1. " + A2[0][0] + " [" + A2[0][
@@ -153,7 +153,7 @@ def send_schedule():
                                      A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
                                      A2[2][1] + "]\n4. "
                                      + A2[3][0] + " [" + A2[3][1] + "]\n")
-                logging.info("morning schedule sended to" + str(i[0]))
+                    logging.info("morning schedule sended to" + str(i[0]))
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
