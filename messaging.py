@@ -153,7 +153,7 @@ def callback_worker(call):
 def text(message):
     log_message(message)
     bot.send_message(message.from_user.id,
-                     "Что вы хотите сделать?\n" + "/start - регистрация\n" + "/settings - настройки")
+                     "Что Вы хотите сделать?\n" + "/start - регистрация\n" + "/settings - настройки")
 
 
 def rewrite_users():

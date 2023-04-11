@@ -10,7 +10,8 @@ t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
 bot = telebot.TeleBot(TOKEN)
 t.close()
-logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s', encoding="utf8")
+logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
+                    encoding="utf8")
 
 LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
 MONDAY = "10.04"
@@ -18,7 +19,8 @@ MONDAY = "10.04"
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
 allowedusers = [[0, 0]]
-
+del_array=[]
+del_array2=[]
 
 def find_index(workbook):
     s = workbook.sheet_names()
@@ -29,6 +31,20 @@ def find_index(workbook):
             break
     if index != -1:
         return index
+
+
+def delete_message():
+    for i in del_array:
+        bot.delete_message(i[0], i[1])
+    del del_array[0:]
+    logging.info("message deleted")
+
+def delete_message2():
+    for i in del_array2:
+        bot.delete_message(i[0], i[1])
+    del del_array2[0:]
+    logging.info("morning message deleted")
+
 
 
 def update_schedule():
@@ -107,25 +123,28 @@ def get_schedule(weekday):
             else:
                 A1[i][1] = k
                 A2[i][1] = k
-            if A1[i][0] == "":
-                A1[i][1] = "---"
-            if A2[i][0] == "":
-                A2[i][1] = "---"
+        if A1[i][0] == "":
+            A1[i][1] = "---"
+        if A2[i][0] == "":
+            A2[i][1] = "---"
 
     logging.info("Schedule updated")
 
 
 def send_next_lesson(g1, g2):
+    delete_message()
     if g1[0] != "":
         for i in allowedusers:
             if i[1] == 1:
-                bot.send_message(i[0], g1[0] + " в " + g1[1])
+                m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
                 logging.info("lesson sended to" + str(i[0]))
+                del_array.append([i[0],m1])
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
-                bot.send_message(i[0], g2[0] + " в " + g2[1])
+                m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
                 logging.info("lesson sended to" + str(i[0]))
+                del_array.append([i[0],m2])
 
 
 def send_schedule():
@@ -139,23 +158,27 @@ def send_schedule():
             update_schedule()
             get_schedule(weekday)
             update_users()
+            delete_message()
+            delete_message2()
             for i in allowedusers[1:]:
                 if i[1] == 1:
-                    bot.send_message(i[0],
+                    m1 = bot.send_message(i[0],
                                      "Расписание на сегодня:\n1. " + A1[0][0] + " [" + A1[0][
                                          1] + "]\n2. " +
                                      A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
                                      A1[2][1] + "]\n4. "
-                                     + A1[3][0] + " [" + A1[3][1] + "]\n")
+                                     + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
                     logging.info("morning schedule sended to" + str(i[0]))
+                    del_array2.append([i[0],m1])
                 elif i[1] == 2:
-                    bot.send_message(i[0],
+                    m2 = bot.send_message(i[0],
                                      "Расписание на сегодня:\n1. " + A2[0][0] + " [" + A2[0][
                                          1] + "]\n2. " +
                                      A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
                                      A2[2][1] + "]\n4. "
-                                     + A2[3][0] + " [" + A2[3][1] + "]\n")
+                                     + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
                     logging.info("morning schedule sended to" + str(i[0]))
+                    del_array2.append([i[0],m2])
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
