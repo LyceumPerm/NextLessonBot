@@ -6,10 +6,14 @@ import datetime
 import wget
 import logging
 
-bot = telebot.TeleBot('')
-logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
+t = open("TOKEN.txt")
+TOKEN = t.readline().strip()
+bot = telebot.TeleBot(TOKEN)
+logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
+                    encoding="utf8")
 
-LINK = ""
+LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
+MONDAY = "10.04"
 
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
@@ -45,22 +49,28 @@ def update_users():
 
 def isMerged(r, c):
     wb1 = xlrd.open_workbook("Schedule.xlsx")
-    sheet1 = wb1.sheet_by_index(0)
+    s1 = wb1.sheet_names()
+    for i in range(len(s1)):
+        if MONDAY in s1[i]:
+            sheet1 = wb1.sheet_by_index(i)
+        else:
+            logging.error("schedule error")
     m = sheet1.merged_cells
     return (r, r + 1, c - 1, c + 1) in m
 
 
 def get_schedule(weekday):
     wb = xlrd.open_workbook("Schedule.xlsx")
-    sheet = wb.sheet_by_index(0)
-    if weekday >= 1:
-        x = 1
-    else:
-        x = 0
+    s = wb.sheet_names()
+    for i in range(len(s)):
+        if MONDAY in s[i]:
+            sheet = wb.sheet_by_index(i)
+        else:
+            logging.error("schedule error")
     for i in range(4):
-        k = sheet.row_values(3 + 5 * weekday + i + x)[60]
-        if isMerged(3 + weekday * 5 + i + x, 59):
-            l = sheet.row_values(3 + weekday * 5 + i + x)[58]
+        k = sheet.row_values(3 + 5 * weekday + i)[60]
+        if isMerged(3 + weekday * 5 + i, 59):
+            l = sheet.row_values(3 + weekday * 5 + i)[58]
             if l.find("(") == -1:
                 A1[i][0] = l.strip()
                 A2[i][0] = l.strip()
@@ -72,8 +82,8 @@ def get_schedule(weekday):
             A1[i][1] = k
             A2[i][1] = k
         else:
-            l1 = sheet.row_values(3 + weekday * 5 + i + x)[58]
-            l2 = sheet.row_values(3 + weekday * 5 + i + x)[59]
+            l1 = sheet.row_values(3 + weekday * 5 + i)[58]
+            l2 = sheet.row_values(3 + weekday * 5 + i)[59]
             if l1.find("(") == -1:
                 A1[i][0] = l1.strip()
             else:
@@ -184,4 +194,5 @@ while True:
         send_schedule()
         sleep(30)
     except Exception as e:
-        logging.error("sending error"+str(e))
+        logging.error("sending error" + str(e))
+        sleep(20)
