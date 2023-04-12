@@ -111,7 +111,6 @@ def callback_worker(call):
                 call.message.chat.username) + ":" + str(call.message.chat.id))
     elif call.data == "cancel":
         bot.delete_message(call.message.chat.id, call.message.id)
-        bot.send_photo(call.message.chat.id, open("ok.png", 'rb'))
         logging.info(
             "user canceled:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
