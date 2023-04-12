@@ -19,8 +19,9 @@ MONDAY = "10.04"
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
 allowedusers = [[0, 0]]
-del_array=[]
-del_array2=[]
+del_array = []
+del_array2 = []
+
 
 def find_index(workbook):
     s = workbook.sheet_names()
@@ -37,14 +38,14 @@ def delete_message():
     for i in del_array:
         bot.delete_message(i[0], i[1])
     del del_array[0:]
-    logging.info("message deleted")
+    logging.info("messages deleted")
+
 
 def delete_message2():
     for i in del_array2:
         bot.delete_message(i[0], i[1])
     del del_array2[0:]
-    logging.info("morning message deleted")
-
+    logging.info("morning messages deleted")
 
 
 def update_schedule():
@@ -60,6 +61,11 @@ def update_schedule():
             logging.error("schedule download failed")
             sleep(5)
             t = True
+    dir_path = "C:\\Users\\Iveni\\PycharmProjects\\Bot\\"
+    tmp = os.listdir(dir_path)
+    for item in tmp:
+        if item.endswith(".tmp"):
+            os.remove(os.path.join(dir_path, item))
 
 
 def update_users():
@@ -137,14 +143,14 @@ def send_next_lesson(g1, g2):
         for i in allowedusers:
             if i[1] == 1:
                 m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
-                logging.info("lesson sended to" + str(i[0]))
-                del_array.append([i[0],m1])
+                logging.info("lesson sended to " + str(i[0]))
+                del_array.append([i[0], m1])
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
                 m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
-                logging.info("lesson sended to" + str(i[0]))
-                del_array.append([i[0],m2])
+                logging.info("lesson sended to " + str(i[0]))
+                del_array.append([i[0], m2])
 
 
 def send_schedule():
@@ -158,27 +164,25 @@ def send_schedule():
             update_schedule()
             get_schedule(weekday)
             update_users()
-            delete_message()
-            delete_message2()
             for i in allowedusers[1:]:
                 if i[1] == 1:
                     m1 = bot.send_message(i[0],
-                                     "Расписание на сегодня:\n1. " + A1[0][0] + " [" + A1[0][
-                                         1] + "]\n2. " +
-                                     A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
-                                     A1[2][1] + "]\n4. "
-                                     + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
-                    logging.info("morning schedule sended to" + str(i[0]))
-                    del_array2.append([i[0],m1])
+                                          "Расписание на сегодня:\n1. " + A1[0][0] + " [" + A1[0][
+                                              1] + "]\n2. " +
+                                          A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
+                                          A1[2][1] + "]\n4. "
+                                          + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
+                    logging.info("morning schedule sended to " + str(i[0]))
+                    del_array2.append([i[0], m1])
                 elif i[1] == 2:
                     m2 = bot.send_message(i[0],
-                                     "Расписание на сегодня:\n1. " + A2[0][0] + " [" + A2[0][
-                                         1] + "]\n2. " +
-                                     A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
-                                     A2[2][1] + "]\n4. "
-                                     + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
-                    logging.info("morning schedule sended to" + str(i[0]))
-                    del_array2.append([i[0],m2])
+                                          "Расписание на сегодня:\n1. " + A2[0][0] + " [" + A2[0][
+                                              1] + "]\n2. " +
+                                          A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
+                                          A2[2][1] + "]\n4. "
+                                          + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
+                    logging.info("morning schedule sended to " + str(i[0]))
+                    del_array2.append([i[0], m2])
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
@@ -212,6 +216,10 @@ def send_schedule():
             g2 = A2[3]
             send_next_lesson(g1, g2)
             sleep(60)
+        elif current_time == "16:00":
+            delete_message()
+            delete_message2()
+            sleep(60)
 
 
 while True:
@@ -219,5 +227,5 @@ while True:
         send_schedule()
         sleep(30)
     except Exception as e:
-        logging.error("sending error" + str(e))
+        logging.error("sending error " + str(e))
         sleep(20)
