@@ -61,11 +61,10 @@ def update_schedule():
             logging.error("schedule download failed")
             sleep(5)
             t = True
-    dir_path = "C:\\Users\\Iveni\\PycharmProjects\\Bot\\"
-    tmp = os.listdir(dir_path)
+    tmp = os.listdir()
     for item in tmp:
         if item.endswith(".tmp"):
-            os.remove(os.path.join(dir_path, item))
+            os.remove(os.path.join(item))
 
 
 def update_users():
