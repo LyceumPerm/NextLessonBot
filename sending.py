@@ -36,14 +36,20 @@ def find_index(workbook):
 
 def delete_message():
     for i in del_array:
-        bot.delete_message(i[0], i[1])
+        try:
+            bot.delete_message(i[0], i[1])
+        except:
+            pass
     del del_array[0:]
     logging.info("messages deleted")
 
 
 def delete_message2():
     for i in del_array2:
-        bot.delete_message(i[0], i[1])
+        try:
+            bot.delete_message(i[0], i[1])
+        except:
+            pass
     del del_array2[0:]
     logging.info("morning messages deleted")
 
@@ -65,6 +71,7 @@ def update_schedule():
     for item in tmp:
         if item.endswith(".tmp"):
             os.remove(item)
+
 
 def update_users():
     ur = xlrd.open_workbook("users.xls")
@@ -88,10 +95,14 @@ def is_merged(r, c):
 def get_schedule(weekday):
     wb = xlrd.open_workbook("Schedule.xlsx")
     sheet = wb.sheet_by_index(find_index(wb))
+    if weekday > 0:
+        x = 1
+    else:
+        x = 0
     for i in range(4):
-        k = sheet.row_values(3 + 5 * weekday + i)[60]
-        if is_merged(3 + weekday * 5 + i, 59):
-            l = sheet.row_values(3 + weekday * 5 + i)[58]
+        k = sheet.row_values(3 + 5 * weekday + i + x)[60]
+        if is_merged(3 + weekday * 5 + i + x, 59):
+            l = sheet.row_values(3 + weekday * 5 + i + x)[58]
             if l.find("(") == -1:
                 A1[i][0] = l.strip()
                 A2[i][0] = l.strip()
@@ -103,8 +114,8 @@ def get_schedule(weekday):
             A1[i][1] = k
             A2[i][1] = k
         else:
-            l1 = sheet.row_values(3 + weekday * 5 + i)[58]
-            l2 = sheet.row_values(3 + weekday * 5 + i)[59]
+            l1 = sheet.row_values(3 + weekday * 5 + i + x)[58]
+            l2 = sheet.row_values(3 + weekday * 5 + i + x)[59]
             if l1.find("(") == -1:
                 A1[i][0] = l1.strip()
             else:
