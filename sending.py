@@ -14,7 +14,7 @@ logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)
                     encoding="utf8")
 
 LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
-MONDAY = "10.04"
+MONDAY = "17.04"
 
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
@@ -64,8 +64,7 @@ def update_schedule():
     tmp = os.listdir()
     for item in tmp:
         if item.endswith(".tmp"):
-            os.remove(os.path.join(item))
-
+            os.remove(item)
 
 def update_users():
     ur = xlrd.open_workbook("users.xls")
@@ -109,7 +108,7 @@ def get_schedule(weekday):
             if l1.find("(") == -1:
                 A1[i][0] = l1.strip()
             else:
-                A1[i][0] = l1[:l2.find("(")].strip()
+                A1[i][0] = l1[:l1.find("(")].strip()
             if l2.find("(") == -1:
                 A2[i][0] = l2.strip()
             else:
