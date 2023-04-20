@@ -10,17 +10,18 @@ TOKEN = t.readline().strip()
 admin.close()
 t.close()
 bot = telebot.TeleBot(TOKEN, skip_pending=True)
-logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s', encoding="utf8")
+logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
+                    encoding="utf8")
 allowedusers = []
 try:
     ur = openpyxl.load_workbook("users.xlsx")
     sheetr = ur.active
-    for i in range(1,sheetr.max_row+1):
-        a = int(sheetr.cell(i,1).value)
-        b = int(sheetr.cell(i,2).value)
+    for i in range(1, sheetr.max_row + 1):
+        a = int(sheetr.cell(i, 1).value)
+        b = int(sheetr.cell(i, 2).value)
         allowedusers.append([a, b])
 except Exception as e:
-    logging.error("no users"+str(e))
+    logging.error("no users" + str(e))
 logging.info("start bot")
 
 
@@ -161,8 +162,8 @@ def rewrite_users():
     sheetw.title = "users"
     while i < l:
         if allowedusers[i][1] != -2:
-            sheetw.cell(i+1,1).value = allowedusers[i][0]
-            sheetw.cell(i+1,2).value = allowedusers[i][1]
+            sheetw.cell(i + 1, 1).value = allowedusers[i][0]
+            sheetw.cell(i + 1, 2).value = allowedusers[i][1]
             i += 1
         else:
             del allowedusers[i]

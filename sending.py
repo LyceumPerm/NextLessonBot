@@ -184,10 +184,6 @@ def send_schedule():
             get_schedule(current_date)
             update_users()
             for i in allowedusers:
-                m0 = bot.send_message(i[0],
-                                      "Расписание звонков на сегодня:\n" + "1. 9:00 - 10:00\n" +
-                                      "2. 10:20 - 11:20\n" + "3. 11:40 - 12:40\n" + "4. 13:00 - 14:00\n").message_id
-                del_array2.append([i[0], m0])
                 if i[1] == 1:
                     m1 = bot.send_message(i[0],
                                           "Расписание на сегодня:\n1. " + A1[0][0] + " [" + A1[0][
@@ -215,7 +211,7 @@ def send_schedule():
             g2 = A2[0]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "09:55":
+        elif current_time == "10:25":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -223,7 +219,7 @@ def send_schedule():
             g2 = A2[1]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "11:15":
+        elif current_time == "12:15":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -231,7 +227,7 @@ def send_schedule():
             g2 = A2[2]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "12:35":
+        elif current_time == "14:05":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -239,7 +235,7 @@ def send_schedule():
             g2 = A2[3]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "14:00":
+        elif current_time == "16:00":
             delete_message()
             delete_message2()
             sleep(60)
