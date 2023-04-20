@@ -1,10 +1,10 @@
 import telebot
-import xlrd
 import os
 from time import sleep
 import datetime
 import wget
 import logging
+import openpyxl
 
 t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
@@ -18,20 +18,18 @@ MONDAY = "17.04"
 
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
-allowedusers = [[0, 0]]
+allowedusers = []
 del_array = []
 del_array2 = []
 
 
-def find_index(workbook):
-    s = workbook.sheet_names()
-    index = -1
-    for i in range(len(s)):
-        if MONDAY in s[i]:
-            index = i
+def find_sheet(wb):
+    sheets = wb.sheetnames
+    for sh in sheets:
+        if MONDAY in sh:
+            sheet = sh
             break
-    if index != -1:
-        return index
+    return sheet
 
 
 def delete_message():
@@ -74,35 +72,43 @@ def update_schedule():
 
 
 def update_users():
-    ur = xlrd.open_workbook("users.xls")
-    sheet_r = ur.sheet_by_index(0)
-    n = sheet_r.nrows
-    del allowedusers[1:]
-    for i in range(n):
-        a = int(sheet_r.row_values(i)[0])
-        b = int(sheet_r.row_values(i)[1])
+    ur = openpyxl.load_workbook("users.xlsx")
+    sheet_r = ur.active
+    n = sheet_r.max_row + 1
+    del allowedusers[0:]
+    for i in range(1, n):
+        a = int(sheet_r.cell(i, 1).value)
+        b = int(sheet_r.cell(i, 2).value)
         allowedusers.append([a, b])
     logging.info("users updated")
 
 
-def is_merged(r, c):
-    wb1 = xlrd.open_workbook("Schedule.xlsx")
-    sheet1 = wb1.sheet_by_index(find_index(wb1))
+def is_merged(r, c, sheet1):
     m = sheet1.merged_cells
-    return (r, r + 1, c - 1, c + 1) in m
+    merged = False
+    for i in m:
+        if str(i).endswith(sheet1.cell(r, c).coordinate):
+            merged = True
+    return merged
 
 
-def get_schedule(weekday):
-    wb = xlrd.open_workbook("Schedule.xlsx")
-    sheet = wb.sheet_by_index(find_index(wb))
-    if weekday > 0:
-        x = 1
-    else:
-        x = 0
+def get_schedule(date):
+    wb = openpyxl.load_workbook("Schedule.xlsx")
+    sheet = wb[find_sheet(wb)]
+    for row in range(1, sheet.max_row + 1):
+        if str(sheet.cell(row, 1).value)[:10] == date:
+            start_row = row
+    for column in range(1, sheet.max_column + 1):
+        if str(sheet.cell(2, column).value)[:10] == "11мат1":
+            start_column = column
     for i in range(4):
-        k = sheet.row_values(3 + 5 * weekday + i + x)[60]
-        if is_merged(3 + weekday * 5 + i + x, 59):
-            l = sheet.row_values(3 + weekday * 5 + i + x)[58]
+        k = sheet.cell(start_row + i, start_column + 2).value
+        if k == None or sheet.cell(start_row + i, start_column + 2).font.strike:
+            k = ""
+        if is_merged(start_row + i, start_column + 1, sheet):
+            l = sheet.cell(start_row + i, start_column).value
+            if l == None or sheet.cell(start_row + i, start_column).font.strike:
+                l = ""
             if l.find("(") == -1:
                 A1[i][0] = l.strip()
                 A2[i][0] = l.strip()
@@ -114,8 +120,12 @@ def get_schedule(weekday):
             A1[i][1] = k
             A2[i][1] = k
         else:
-            l1 = sheet.row_values(3 + weekday * 5 + i + x)[58]
-            l2 = sheet.row_values(3 + weekday * 5 + i + x)[59]
+            l1 = sheet.cell(start_row + i, start_column).value
+            l2 = sheet.cell(start_row + i, start_column + 1).value
+            if l1 == None or sheet.cell(start_row + i, start_column).font.strike:
+                l1 = ""
+            if l2 == None or sheet.cell(start_row + i, start_column + 1).font.strike:
+                l2 = ""
             if l1.find("(") == -1:
                 A1[i][0] = l1.strip()
             else:
@@ -142,7 +152,6 @@ def get_schedule(weekday):
             A1[i][1] = "---"
         if A2[i][0] == "":
             A2[i][1] = "---"
-
     logging.info("Schedule updated")
 
 
@@ -166,14 +175,19 @@ def send_schedule():
     now = datetime.datetime.now()
     current_time = now.strftime("%H:%M")
     weekday = now.weekday()
+    current_date = now.strftime("%Y-%m-%d")
     if weekday > 4:
         sleep(3600 * 5)
     else:
         if current_time == "06:30":
             update_schedule()
-            get_schedule(weekday)
+            get_schedule(current_date)
             update_users()
-            for i in allowedusers[1:]:
+            for i in allowedusers:
+                m0 = bot.send_message(i[0],
+                                      "Расписание звонков на сегодня:\n" + "1. 9:00 - 10:00\n" +
+                                      "2. 10:20 - 11:20\n" + "3. 11:40 - 12:40\n" + "4. 13:00 - 14:00\n").message_id
+                del_array2.append([i[0], m0])
                 if i[1] == 1:
                     m1 = bot.send_message(i[0],
                                           "Расписание на сегодня:\n1. " + A1[0][0] + " [" + A1[0][
@@ -195,37 +209,37 @@ def send_schedule():
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
-            get_schedule(weekday)
+            get_schedule(current_date)
             update_users()
             g1 = A1[0]
             g2 = A2[0]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "10:25":
+        elif current_time == "09:55":
             update_schedule()
-            get_schedule(weekday)
+            get_schedule(current_date)
             update_users()
             g1 = A1[1]
             g2 = A2[1]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "12:15":
+        elif current_time == "11:15":
             update_schedule()
-            get_schedule(weekday)
+            get_schedule(current_date)
             update_users()
             g1 = A1[2]
             g2 = A2[2]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "14:05":
+        elif current_time == "12:35":
             update_schedule()
-            get_schedule(weekday)
+            get_schedule(current_date)
             update_users()
             g1 = A1[3]
             g2 = A2[3]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "16:00":
+        elif current_time == "14:00":
             delete_message()
             delete_message2()
             sleep(60)

@@ -1,8 +1,7 @@
 import telebot
 import logging
-import xlwt
-import xlrd
 from time import sleep
+import openpyxl
 
 admin = open("ADMIN_ID.txt")
 ADMIN_ID = int(admin.readline().strip())
@@ -12,18 +11,16 @@ admin.close()
 t.close()
 bot = telebot.TeleBot(TOKEN, skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s', encoding="utf8")
-allowedusers = [[0, 0]]
+allowedusers = []
 try:
-    ur = xlrd.open_workbook("users.xls")
-    sheetr = ur.sheet_by_index(0)
-    userslist = sheetr.col_values(0)
-    grouplist = sheetr.col_values(1)
-    for i in range(len(userslist)):
-        a = int(userslist[i])
-        b = int(grouplist[i])
+    ur = openpyxl.load_workbook("users.xlsx")
+    sheetr = ur.active
+    for i in range(1,sheetr.max_row+1):
+        a = int(sheetr.cell(i,1).value)
+        b = int(sheetr.cell(i,2).value)
         allowedusers.append([a, b])
-except Exception:
-    logging.error("no users")
+except Exception as e:
+    logging.error("no users"+str(e))
 logging.info("start bot")
 
 
@@ -48,9 +45,10 @@ def start(message):
 
 @bot.message_handler(commands=['users'])
 def users(message):
+    print(allowedusers)
     log_message(message)
     if message.from_user.id == ADMIN_ID:
-        bot.send_document(ADMIN_ID, open("users.xls", 'rb'))
+        bot.send_document(ADMIN_ID, open("users.xlsx", 'rb'))
 
 
 @bot.message_handler(commands=['logs'])
@@ -157,18 +155,19 @@ def text(message):
 
 def rewrite_users():
     l = len(allowedusers)
-    i = 1
-    uw = xlwt.Workbook(encoding="utf8")
-    sheetw = uw.add_sheet("users")
+    i = 0
+    uw = openpyxl.Workbook()
+    sheetw = uw.active
+    sheetw.title = "users"
     while i < l:
         if allowedusers[i][1] != -2:
-            sheetw.write(i - 1, 0, allowedusers[i][0])
-            sheetw.write(i - 1, 1, allowedusers[i][1])
+            sheetw.cell(i+1,1).value = allowedusers[i][0]
+            sheetw.cell(i+1,2).value = allowedusers[i][1]
             i += 1
         else:
             del allowedusers[i]
             l -= 1
-    uw.save("users.xls")
+    uw.save("users.xlsx")
 
 
 def log_message(m):
