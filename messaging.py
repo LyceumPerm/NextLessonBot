@@ -84,19 +84,17 @@ def settings(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == "change":
-        bot.delete_message(call.message.chat.id, call.message.id)
         keyboard = telebot.types.InlineKeyboardMarkup()
         key_g1 = telebot.types.InlineKeyboardButton(text='1', callback_data='change group 1')
         key_g2 = telebot.types.InlineKeyboardButton(text='2', callback_data='change group 2')
         key_cancel = telebot.types.InlineKeyboardButton(text='отмена', callback_data='cancel')
         keyboard.add(key_g1, key_g2)
         keyboard.add(key_cancel)
-        bot.send_message(call.message.chat.id, text="Выберите группу", reply_markup=keyboard)
+        bot.edit_message_text("Выберите группу",call.message.chat.id, call.message.id, reply_markup=keyboard)
         logging.info(
             "user changing:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
     elif call.data == "delete":
-        bot.delete_message(call.message.chat.id, call.message.id)
         r = 0
         for i in range(len(allowedusers)):
             if allowedusers[i][0] == call.message.chat.id:
@@ -104,7 +102,7 @@ def callback_worker(call):
                 break
         allowedusers[r][1] = -2
         rewrite_users()
-        bot.send_message(call.message.chat.id, "Готово")
+        bot.send_message("Готово",call.message.chat.id, call.message.id)
         logging.info(
             "user deleted:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
@@ -114,7 +112,6 @@ def callback_worker(call):
             "user canceled:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
     elif call.data == "change group 1":
-        bot.delete_message(call.message.chat.id, call.message.id)
         r = -1
         for i in range(len(allowedusers)):
             if allowedusers[i][0] == call.message.chat.id:
@@ -125,11 +122,10 @@ def callback_worker(call):
         else:
             allowedusers[r][1] = 1
         rewrite_users()
-        bot.send_message(call.message.chat.id, "Готово")
+        bot.edit_message_text("Готово",call.message.chat.id, call.message.id)
         logging.info("user chose group 1:" + str(call.message.chat.first_name) + " " + str(
             call.message.chat.last_name) + ":" + str(call.message.chat.username) + ":" + str(call.message.chat.id))
     elif call.data == "change group 2":
-        bot.delete_message(call.message.chat.id, call.message.id)
         r = -1
         for i in range(len(allowedusers)):
             if allowedusers[i][0] == call.message.chat.id:
@@ -140,7 +136,7 @@ def callback_worker(call):
         else:
             allowedusers[r][1] = 2
         rewrite_users()
-        bot.send_message(call.message.chat.id, "Готово")
+        bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
         logging.info(
             "user chose group 2:" + str(call.message.chat.first_name) + " " + str(
                 call.message.chat.last_name) + ":" + str(
