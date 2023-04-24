@@ -10,11 +10,16 @@ t = open("TOKEN.txt")
 TOKEN = t.readline().strip()
 bot = telebot.TeleBot(TOKEN)
 t.close()
+
+t = open("SKOSAREV_ID.txt")
+SKOSAREV_ID = t.readline().strip()
+t.close()
+
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
                     encoding="utf8")
 
 LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
-MONDAY = "17.04"
+MONDAY = "24.04"
 
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
@@ -96,10 +101,11 @@ def get_schedule(date):
     wb = openpyxl.load_workbook("Schedule.xlsx")
     sheet = wb[find_sheet(wb)]
     for row in range(1, sheet.max_row + 1):
+        print(date, str(sheet.cell(row, 1).value)[:10])
         if str(sheet.cell(row, 1).value)[:10] == date:
             start_row = row
     for column in range(1, sheet.max_column + 1):
-        if str(sheet.cell(2, column).value)[:10] == "11мат1":
+        if str(sheet.cell(2, column).value) == "11мат1":
             start_column = column
     for i in range(4):
         k = sheet.cell(start_row + i, start_column + 2).value
@@ -176,10 +182,24 @@ def send_schedule():
     current_time = now.strftime("%H:%M")
     weekday = now.weekday()
     current_date = now.strftime("%Y-%m-%d")
-    if weekday > 4:
-        sleep(3600 * 5)
-    else:
+    if weekday == 5 and current_time == "06:30":
+        dlts = bot.send_message(SKOSAREV_ID, "!!!УРА!!!СВОБОДНЫЙ ДЕНЬ!!!").message_id
+        if os.path.isfile("dlts.txt"):
+            os.remove("dlts.txt")
+        f = open("dlts.txt", "a+")
+        f.write(str(dlts))
+        f.close()
+        sleep(60)
+    elif weekday <= 4:
         if current_time == "06:30":
+            try:
+                f = open("dlts.txt")
+                dlts = int(f.readline().strip())
+                f.close()
+                bot.delete_message(SKOSAREV_ID, int(dlts))
+                logging.info("message for skosarevv deleted")
+            except Exception as e:
+                logging.error(str(e))
             update_schedule()
             get_schedule(current_date)
             update_users()
