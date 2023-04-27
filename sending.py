@@ -5,15 +5,10 @@ import datetime
 import wget
 import logging
 import openpyxl
+import sqlite3
+from config import TOKEN, SKOSAREV_ID
 
-t = open("TOKEN.txt")
-TOKEN = t.readline().strip()
 bot = telebot.TeleBot(TOKEN)
-t.close()
-
-t = open("SKOSAREV_ID.txt")
-SKOSAREV_ID = t.readline().strip()
-t.close()
 
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
                     encoding="utf8")
@@ -24,8 +19,14 @@ MONDAY = "24.04"
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
 allowedusers = []
-del_array = []
-del_array2 = []
+
+conn = sqlite3.connect("NLB.db")
+cur = conn.cursor()
+cur.execute("CREATE TABLE IF NOT EXISTS msgs_dlt1(message_id INT PRIMARY KEY, chat_id INT);")
+cur.execute("CREATE TABLE IF NOT EXISTS msgs_dlt2(message_id INT PRIMARY KEY, chat_id INT);")
+cur.execute("CREATE TABLE IF NOT EXISTS dlts(message_id INT PRIMARY KEY, chat_id INT);")
+conn.commit()
+conn.close()
 
 
 def find_sheet(wb):
@@ -38,23 +39,35 @@ def find_sheet(wb):
 
 
 def delete_message():
-    for i in del_array:
+    conn = sqlite3.connect("NLB.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM msgs_dlt1")
+    messages = cur.fetchall()
+    for i in messages:
         try:
-            bot.delete_message(i[0], i[1])
+            bot.delete_message(i[1], i[0])
         except:
             pass
-    del del_array[0:]
+        cur.execute("DELETE FROM msgs_dlt1 WHERE message_id=?;", (i[0],))
+    conn.commit()
+    conn.close()
     logging.info("messages deleted")
 
 
 def delete_message2():
-    for i in del_array2:
+    conn = sqlite3.connect("NLB.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM msgs_dlt2")
+    messages = cur.fetchall()
+    for i in messages:
         try:
-            bot.delete_message(i[0], i[1])
+            bot.delete_message(i[1], i[0])
         except:
             pass
-    del del_array2[0:]
-    logging.info("morning messages deleted")
+        cur.execute("DELETE FROM msgs_dlt2 WHERE message_id=?;", (i[0],))
+    conn.commit()
+    conn.close()
+    logging.info("messages deleted")
 
 
 def update_schedule():
@@ -101,7 +114,6 @@ def get_schedule(date):
     wb = openpyxl.load_workbook("Schedule.xlsx")
     sheet = wb[find_sheet(wb)]
     for row in range(1, sheet.max_row + 1):
-        print(date, str(sheet.cell(row, 1).value)[:10])
         if str(sheet.cell(row, 1).value)[:10] == date:
             start_row = row
     for column in range(1, sheet.max_column + 1):
@@ -163,18 +175,22 @@ def get_schedule(date):
 
 def send_next_lesson(g1, g2):
     delete_message()
+    conn = sqlite3.connect("NLB.db")
+    cur = conn.cursor()
     if g1[0] != "":
         for i in allowedusers:
             if i[1] == 1:
                 m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
                 logging.info("lesson sended to " + str(i[0]))
-                del_array.append([i[0], m1])
+                cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m1, i[0]))
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
                 m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
                 logging.info("lesson sended to " + str(i[0]))
-                del_array.append([i[0], m2])
+                cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m2, i[0]))
+    conn.commit()
+    conn.close()
 
 
 def send_schedule():
@@ -184,25 +200,32 @@ def send_schedule():
     current_date = now.strftime("%Y-%m-%d")
     if weekday == 5 and current_time == "06:30":
         dlts = bot.send_message(SKOSAREV_ID, "!!!УРА!!!СВОБОДНЫЙ ДЕНЬ!!!").message_id
-        if os.path.isfile("dlts.txt"):
-            os.remove("dlts.txt")
-        f = open("dlts.txt", "a+")
-        f.write(str(dlts))
-        f.close()
+        conn = sqlite3.connect("NLB.db")
+        cur = conn.cursor()
+        cur.execute("INSERT INTO dlts VALUES(?,?);", (dlts, SKOSAREV_ID))
+        conn.commit()
+        conn.close()
         sleep(60)
     elif weekday <= 4:
         if current_time == "06:30":
             try:
-                f = open("dlts.txt")
-                dlts = int(f.readline().strip())
-                f.close()
-                bot.delete_message(SKOSAREV_ID, int(dlts))
+                conn = sqlite3.connect("NLB.db")
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM dlts")
+                dlts = cur.fetchall()
+                for i in dlts:
+                    bot.delete_message(i[1], i[0])
+                cur.execute("DELETE FROM dlts")
+                conn.commit()
+                conn.close()
                 logging.info("message for skosarevv deleted")
             except Exception as e:
                 logging.error(str(e))
             update_schedule()
             get_schedule(current_date)
             update_users()
+            conn = sqlite3.connect("NLB.db")
+            cur = conn.cursor()
             for i in allowedusers:
                 if i[1] == 1:
                     m1 = bot.send_message(i[0],
@@ -212,7 +235,7 @@ def send_schedule():
                                           A1[2][1] + "]\n4. "
                                           + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
                     logging.info("morning schedule sended to " + str(i[0]))
-                    del_array2.append([i[0], m1])
+                    cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m1, i[0]))
                 elif i[1] == 2:
                     m2 = bot.send_message(i[0],
                                           "Расписание на сегодня:\n1. " + A2[0][0] + " [" + A2[0][
@@ -221,7 +244,9 @@ def send_schedule():
                                           A2[2][1] + "]\n4. "
                                           + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
                     logging.info("morning schedule sended to " + str(i[0]))
-                    del_array2.append([i[0], m2])
+                    cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m2, i[0]))
+                conn.commit()
+                conn.close()
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
@@ -264,7 +289,7 @@ def send_schedule():
 while True:
     try:
         send_schedule()
-        sleep(30)
+        sleep(0)
     except Exception as e:
         logging.error("sending error " + str(e))
         sleep(20)

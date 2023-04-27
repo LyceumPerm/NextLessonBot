@@ -1,25 +1,23 @@
 import telebot
 import logging
 from time import sleep
-import openpyxl
+import sqlite3
+from config import TOKEN, ADMIN_ID
 
-admin = open("ADMIN_ID.txt")
-ADMIN_ID = int(admin.readline().strip())
-t = open("TOKEN.txt")
-TOKEN = t.readline().strip()
-admin.close()
-t.close()
 bot = telebot.TeleBot(TOKEN, skip_pending=True)
 logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s',
                     encoding="utf8")
+conn = sqlite3.connect("NLB.db")
+cur = conn.cursor()
+cur.execute("CREATE TABLE IF NOT EXISTS users(user_id INT PRIMARY KEY, groupp INT);")
+conn.commit()
 allowedusers = []
 try:
-    ur = openpyxl.load_workbook("users.xlsx")
-    sheetr = ur.active
-    for i in range(1, sheetr.max_row + 1):
-        a = int(sheetr.cell(i, 1).value)
-        b = int(sheetr.cell(i, 2).value)
-        allowedusers.append([a, b])
+    cur.execute("SELECT * FROM users")
+    u = cur.fetchall()
+    for user in u:
+        allowedusers.append([user[0], user[1]])
+    conn.close()
 except Exception as e:
     logging.error("no users" + str(e))
 logging.info("start bot")
@@ -44,12 +42,11 @@ def start(message):
         bot.send_message(message.from_user.id, "Вы уже зарегестрированы")
 
 
-@bot.message_handler(commands=['users'])
+@bot.message_handler(commands=['db'])
 def users(message):
-    print(allowedusers)
     log_message(message)
     if message.from_user.id == ADMIN_ID:
-        bot.send_document(ADMIN_ID, open("users.xlsx", 'rb'))
+        bot.send_document(ADMIN_ID, open("NLB.db", 'rb'))
 
 
 @bot.message_handler(commands=['logs'])
@@ -90,7 +87,7 @@ def callback_worker(call):
         key_cancel = telebot.types.InlineKeyboardButton(text='отмена', callback_data='cancel')
         keyboard.add(key_g1, key_g2)
         keyboard.add(key_cancel)
-        bot.edit_message_text("Выберите группу",call.message.chat.id, call.message.id, reply_markup=keyboard)
+        bot.edit_message_text("Выберите группу", call.message.chat.id, call.message.id, reply_markup=keyboard)
         logging.info(
             "user changing:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
@@ -102,7 +99,7 @@ def callback_worker(call):
                 break
         allowedusers[r][1] = -2
         rewrite_users()
-        bot.send_message("Готово",call.message.chat.id, call.message.id)
+        bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
         logging.info(
             "user deleted:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
                 call.message.chat.username) + ":" + str(call.message.chat.id))
@@ -122,7 +119,7 @@ def callback_worker(call):
         else:
             allowedusers[r][1] = 1
         rewrite_users()
-        bot.edit_message_text("Готово",call.message.chat.id, call.message.id)
+        bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
         logging.info("user chose group 1:" + str(call.message.chat.first_name) + " " + str(
             call.message.chat.last_name) + ":" + str(call.message.chat.username) + ":" + str(call.message.chat.id))
     elif call.data == "change group 2":
@@ -151,20 +148,17 @@ def text(message):
 
 
 def rewrite_users():
-    l = len(allowedusers)
-    i = 0
-    uw = openpyxl.Workbook()
-    sheetw = uw.active
-    sheetw.title = "users"
-    while i < l:
-        if allowedusers[i][1] != -2:
-            sheetw.cell(i + 1, 1).value = allowedusers[i][0]
-            sheetw.cell(i + 1, 2).value = allowedusers[i][1]
-            i += 1
+    conn = sqlite3.connect("NLB.db")
+    cur = conn.cursor()
+    for user1 in allowedusers:
+        if user1[1] != -2:
+            user = (user1[0], user1[1])
+            cur.execute("DELETE FROM users WHERE user_id=?;", (user1[0],))
+            cur.execute("INSERT INTO users VALUES (?,?);", user)
         else:
-            del allowedusers[i]
-            l -= 1
-    uw.save("users.xlsx")
+            cur.execute("DELETE FROM users WHERE user_id=?;", (user1[0],))
+    conn.commit()
+    conn.close()
 
 
 def log_message(m):
