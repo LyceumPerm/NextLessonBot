@@ -92,13 +92,14 @@ def update_schedule():
 
 
 def update_users():
-    ur = openpyxl.load_workbook("users.xlsx")
-    sheet_r = ur.active
-    n = sheet_r.max_row + 1
+    conn = sqlite3.connect("NLB.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users")
+    usrs = cur.fetchall()
     del allowedusers[0:]
-    for i in range(1, n):
-        a = int(sheet_r.cell(i, 1).value)
-        b = int(sheet_r.cell(i, 2).value)
+    for i in range(0, len(usrs)):
+        a = usrs[i][0]
+        b = usrs[i][1]
         allowedusers.append([a, b])
     logging.info("users updated")
 
@@ -292,7 +293,7 @@ def send_schedule():
 while True:
     try:
         send_schedule()
-        sleep(30)
+        sleep(0)
     except Exception as e:
         logging.error("sending error " + str(e))
         sleep(20)
