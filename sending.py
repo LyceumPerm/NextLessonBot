@@ -248,8 +248,8 @@ def send_schedule():
                                           + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
                     logging.info("morning schedule sended to " + str(i[0]))
                     cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m2, i[0]))
-                conn.commit()
-                conn.close()
+            conn.commit()
+            conn.close()
             sleep(60)
         elif current_time == "08:50":
             update_schedule()
