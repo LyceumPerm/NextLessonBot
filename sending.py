@@ -14,7 +14,6 @@ logging.basicConfig(filename="logs.log", level=logging.INFO, format=' %(asctime)
                     encoding="utf8")
 
 LINK = "https://docs.google.com/spreadsheets/d/1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v/export?format=xlsx&id=1tGbeevMu_7_n_pKDFjH3cNFNigClVW3v"
-MONDAY = "24.04"
 
 A1 = [["" for i in range(2)] for j in range(4)]
 A2 = [["" for k in range(2)] for l in range(4)]
@@ -30,9 +29,12 @@ conn.close()
 
 
 def find_sheet(wb):
+    weekday = datetime.datetime.now().weekday()
+    today = datetime.datetime.today() + datetime.timedelta(days=-weekday)
+    date = today.strftime("%d.%m")
     sheets = wb.sheetnames
     for sh in sheets:
-        if MONDAY in sh:
+        if date in sh:
             sheet = sh
             break
     return sheet
@@ -208,19 +210,20 @@ def send_schedule():
         sleep(60)
     elif weekday <= 4:
         if current_time == "06:30":
-            try:
-                conn = sqlite3.connect("NLB.db")
-                cur = conn.cursor()
-                cur.execute("SELECT * FROM dlts")
-                dlts = cur.fetchall()
-                for i in dlts:
-                    bot.delete_message(i[1], i[0])
-                cur.execute("DELETE FROM dlts")
-                conn.commit()
-                conn.close()
-                logging.info("message for skosarevv deleted")
-            except Exception as e:
-                logging.error(str(e))
+            if weekday ==0:
+                try:
+                    conn = sqlite3.connect("NLB.db")
+                    cur = conn.cursor()
+                    cur.execute("SELECT * FROM dlts")
+                    dlts = cur.fetchall()
+                    for i in dlts:
+                        bot.delete_message(i[1], i[0])
+                    cur.execute("DELETE FROM dlts")
+                    conn.commit()
+                    conn.close()
+                    logging.info("message for skosarevv deleted")
+                except Exception as e:
+                    logging.error(str(e))
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -289,7 +292,7 @@ def send_schedule():
 while True:
     try:
         send_schedule()
-        sleep(0)
+        sleep(30)
     except Exception as e:
         logging.error("sending error " + str(e))
         sleep(20)
