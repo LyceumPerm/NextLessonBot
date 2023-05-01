@@ -1,0 +1,3 @@
+TOKEN = ""
+ADMIN_ID =
+SKOSAREV_ID =
