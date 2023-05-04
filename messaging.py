@@ -158,7 +158,7 @@ def rewrite_users():
 
 def log_message(m):
     logging.info(
-        f"user message: {m.text} : {m.from_user.first_name} {m.from_user.last_name} : {m.from_user.username} : + {m.from_user.id}")
+        f"user message: {m.text} : {m.from_user.first_name} {m.from_user.last_name} : {m.from_user.username} : {m.from_user.id}")
 
 
 while True:
