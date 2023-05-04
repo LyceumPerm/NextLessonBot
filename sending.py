@@ -190,13 +190,13 @@ def send_next_lesson(g1, g2):
         for i in allowedusers:
             if i[1] == 1:
                 m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
-                logging.info("lsn msg to " + str(i[0]))
+                logging.info(f"lsn msg to {i[0]}")
                 cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m1, i[0]))
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
                 m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
-                logging.info("lsn msg to " + str(i[0]))
+                logging.info(f"lsn msg to {i[0]}")
                 cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m2, i[0]))
     conn.commit()
     conn.close()
@@ -248,7 +248,7 @@ def send_schedule():
                                           A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
                                           A1[2][1] + "]\n4. "
                                           + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
-                    logging.info("mrng msg to " + str(i[0]))
+                    logging.info(f"mrng msg to {i[0]}")
                     cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m1, i[0]))
                 elif i[1] == 2:
                     m2 = bot.send_message(i[0],
@@ -257,7 +257,7 @@ def send_schedule():
                                           A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
                                           A2[2][1] + "]\n4. "
                                           + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
-                    logging.info("mrng msg to " + str(i[0]))
+                    logging.info(f"mrng msg to {i[0]}")
                     cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m2, i[0]))
             conn.commit()
             conn.close()

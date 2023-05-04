@@ -36,7 +36,7 @@ def start(message):
         bot.send_message(message.from_user.id,
                          text="Привет, когда закончится пара этот бот напомнит, какая следующая, чтобы тебе не "
                               "пришлось искать расписание. Кроме того, бот постоянно обновляет расписание, "
-                              "поэтому ты будешь в курсе изменений.\n" + "Если хочешь зарегестрироваться, укажи группу",
+                              "поэтому ты будешь в курсе изменений.\nЕсли хочешь зарегестрироваться, укажи группу",
                          reply_markup=keyboard)
     else:
         bot.send_message(message.from_user.id, "Вы уже зарегестрированы")
@@ -75,7 +75,7 @@ def settings(message):
         keyboard.add(key_delete)
         keyboard.add(key_cancel)
         bot.send_message(message.from_user.id, reply_markup=keyboard,
-                         text="Ваша группа - " + u + "\n" + "Хотите изменить группу или удалить себя из списка?")
+                         text=f"Ваша группа - {u}\nХотите изменить группу или удалить себя из списка?")
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -89,8 +89,7 @@ def callback_worker(call):
         keyboard.add(key_cancel)
         bot.edit_message_text("Выберите группу", call.message.chat.id, call.message.id, reply_markup=keyboard)
         logging.info(
-            "user changing:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
-                call.message.chat.username) + ":" + str(call.message.chat.id))
+            f"user choosing gpoup: {call.message.chat.first_name} {call.message.chat.last_name} : {call.message.chat.username} : {call.message.chat.id}")
     elif call.data == "delete":
         r = 0
         for i in range(len(allowedusers)):
@@ -101,13 +100,11 @@ def callback_worker(call):
         rewrite_users()
         bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
         logging.info(
-            "user deleted:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
-                call.message.chat.username) + ":" + str(call.message.chat.id))
+            f"user deleted: {call.message.chat.first_name} {call.message.chat.last_name} : {call.message.chat.username} : {call.message.chat.id}")
     elif call.data == "cancel":
         bot.delete_message(call.message.chat.id, call.message.id)
         logging.info(
-            "user canceled:" + str(call.message.chat.first_name) + " " + str(call.message.chat.last_name) + ":" + str(
-                call.message.chat.username) + ":" + str(call.message.chat.id))
+            f"user cancel: {call.message.chat.first_name} {call.message.chat.last_name} : {call.message.chat.username} : {call.message.chat.id}")
     elif call.data == "change group 1":
         r = -1
         for i in range(len(allowedusers)):
@@ -120,8 +117,8 @@ def callback_worker(call):
             allowedusers[r][1] = 1
         rewrite_users()
         bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
-        logging.info("user chose group 1:" + str(call.message.chat.first_name) + " " + str(
-            call.message.chat.last_name) + ":" + str(call.message.chat.username) + ":" + str(call.message.chat.id))
+        logging.info(
+            f"user chose group 1: {call.message.chat.first_name} {call.message.chat.last_name} : {call.message.chat.username} : {call.message.chat.id}")
     elif call.data == "change group 2":
         r = -1
         for i in range(len(allowedusers)):
@@ -135,16 +132,14 @@ def callback_worker(call):
         rewrite_users()
         bot.edit_message_text("Готово", call.message.chat.id, call.message.id)
         logging.info(
-            "user chose group 2:" + str(call.message.chat.first_name) + " " + str(
-                call.message.chat.last_name) + ":" + str(
-                call.message.chat.username) + ":" + str(call.message.chat.id))
+            f"user chose group 2: {call.message.chat.first_name} {call.message.chat.last_name} : {call.message.chat.username} : {call.message.chat.id}")
 
 
 @bot.message_handler(content_types=['text'])
 def text(message):
     log_message(message)
     bot.send_message(message.from_user.id,
-                     "Что Вы хотите сделать?\n" + "/start - регистрация\n" + "/settings - настройки")
+                     "Что Вы хотите сделать?\n/start - регистрация\n/settings - настройки")
 
 
 def rewrite_users():
@@ -162,8 +157,8 @@ def rewrite_users():
 
 
 def log_message(m):
-    logging.info("user message: " + m.text + " : " + str(m.from_user.first_name) + " " + str(
-        m.from_user.last_name) + " : " + str(m.from_user.username) + " : " + str(m.from_user.id))
+    logging.info(
+        f"user message: {m.text} : {m.from_user.first_name} {m.from_user.last_name} : {m.from_user.username} : + {m.from_user.id}")
 
 
 while True:
