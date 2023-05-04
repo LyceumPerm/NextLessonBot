@@ -33,6 +33,12 @@ def find_sheet(wb):
     today = datetime.datetime.today() + datetime.timedelta(days=-weekday)
     date = today.strftime("%d.%m")
     sheets = wb.sheetnames
+    if date[0] == "0":
+        date = date[1:]
+    if date == "1.05":
+        date = "2.05"
+    if date == "8.05":
+        date = "10.05"
     for sh in sheets:
         if date in sh:
             sheet = sh
@@ -53,7 +59,7 @@ def delete_message():
         cur.execute("DELETE FROM msgs_dlt1 WHERE message_id=?;", (i[0],))
     conn.commit()
     conn.close()
-    logging.info("messages deleted")
+    logging.info("msgs dlt")
 
 
 def delete_message2():
@@ -69,7 +75,7 @@ def delete_message2():
         cur.execute("DELETE FROM msgs_dlt2 WHERE message_id=?;", (i[0],))
     conn.commit()
     conn.close()
-    logging.info("messages deleted")
+    logging.info("mrng msgs dlt")
 
 
 def update_schedule():
@@ -184,13 +190,13 @@ def send_next_lesson(g1, g2):
         for i in allowedusers:
             if i[1] == 1:
                 m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
-                logging.info("lesson sended to " + str(i[0]))
+                logging.info("lsn msg to " + str(i[0]))
                 cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m1, i[0]))
     if g2[0] != "":
         for i in allowedusers:
             if i[1] == 2:
                 m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
-                logging.info("lesson sended to " + str(i[0]))
+                logging.info("lsn msg to " + str(i[0]))
                 cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m2, i[0]))
     conn.commit()
     conn.close()
@@ -201,30 +207,34 @@ def send_schedule():
     current_time = now.strftime("%H:%M")
     weekday = now.weekday()
     current_date = now.strftime("%Y-%m-%d")
-    if weekday == 5 and current_time == "06:30":
+
+    if (weekday == 6 or weekday <= 2) and current_time == "06:30":
+        conn = sqlite3.connect("NLB.db")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM dlts")
+        dlts = cur.fetchall()
+        if len(dlts) >= 0:
+            for i in dlts:
+                try:
+                    bot.delete_message(i[1], i[0])
+                except:
+                    pass
+            cur.execute("DELETE FROM dlts")
+            conn.commit()
+            conn.close()
+            logging.info("msg to skosarevv dlt")
+
+    if (weekday >= 5 or weekday<=1) and current_time == "06:30":
         dlts = bot.send_message(SKOSAREV_ID, "!!!УРА!!!СВОБОДНЫЙ ДЕНЬ!!!").message_id
         conn = sqlite3.connect("NLB.db")
         cur = conn.cursor()
         cur.execute("INSERT INTO dlts VALUES(?,?);", (dlts, SKOSAREV_ID))
         conn.commit()
         conn.close()
+        logging.info("msg for skosarevv")
         sleep(60)
-    elif weekday <= 4:
+    elif 4 >= weekday >= 2:
         if current_time == "06:30":
-            if weekday ==0:
-                try:
-                    conn = sqlite3.connect("NLB.db")
-                    cur = conn.cursor()
-                    cur.execute("SELECT * FROM dlts")
-                    dlts = cur.fetchall()
-                    for i in dlts:
-                        bot.delete_message(i[1], i[0])
-                    cur.execute("DELETE FROM dlts")
-                    conn.commit()
-                    conn.close()
-                    logging.info("message for skosarevv deleted")
-                except Exception as e:
-                    logging.error(str(e))
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -238,7 +248,7 @@ def send_schedule():
                                           A1[1][0] + " [" + A1[1][1] + "]\n3. " + A1[2][0] + " [" +
                                           A1[2][1] + "]\n4. "
                                           + A1[3][0] + " [" + A1[3][1] + "]\n").message_id
-                    logging.info("morning schedule sended to " + str(i[0]))
+                    logging.info("mrng msg to " + str(i[0]))
                     cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m1, i[0]))
                 elif i[1] == 2:
                     m2 = bot.send_message(i[0],
@@ -247,7 +257,7 @@ def send_schedule():
                                           A2[1][0] + " [" + A2[1][1] + "]\n3. " + A2[2][0] + " [" +
                                           A2[2][1] + "]\n4. "
                                           + A2[3][0] + " [" + A2[3][1] + "]\n").message_id
-                    logging.info("morning schedule sended to " + str(i[0]))
+                    logging.info("mrng msg to " + str(i[0]))
                     cur.execute("INSERT INTO msgs_dlt2 VALUES(?,?);", (m2, i[0]))
             conn.commit()
             conn.close()
@@ -260,7 +270,7 @@ def send_schedule():
             g2 = A2[0]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "10:25":
+        elif current_time == "09:55":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -268,7 +278,7 @@ def send_schedule():
             g2 = A2[1]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "12:15":
+        elif current_time == "11:15":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -276,7 +286,7 @@ def send_schedule():
             g2 = A2[2]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "14:05":
+        elif current_time == "12:45":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -284,7 +294,7 @@ def send_schedule():
             g2 = A2[3]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "16:00":
+        elif current_time == "14:10":
             delete_message()
             delete_message2()
             sleep(60)
@@ -293,7 +303,7 @@ def send_schedule():
 while True:
     try:
         send_schedule()
-        sleep(0)
+        sleep(30)
     except Exception as e:
         logging.error("sending error " + str(e))
         sleep(20)
