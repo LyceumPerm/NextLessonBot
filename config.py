@@ -1,3 +1,0 @@
-TOKEN = ""
-ADMIN_ID = 0
-SKOSAREV_ID = 0
