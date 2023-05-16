@@ -26,6 +26,15 @@ cur.execute("CREATE TABLE IF NOT EXISTS msgs_dlt2(message_id INT PRIMARY KEY, ch
 cur.execute("CREATE TABLE IF NOT EXISTS dlts(message_id INT PRIMARY KEY, chat_id INT);")
 conn.commit()
 conn.close()
+holidays = [5, 6]
+holidays2 = []
+for i in range(len(holidays)):
+    if holidays[i]<=5:
+        holidays2.append(holidays[i]+1)
+    else:
+        holidays2.append(0)
+logging.info("start sending")
+print("sending")
 
 
 def find_sheet(wb):
@@ -35,10 +44,6 @@ def find_sheet(wb):
     sheets = wb.sheetnames
     if date[0] == "0":
         date = date[1:]
-    if date == "1.05":
-        date = "2.05"
-    if date == "8.05":
-        date = "10.05"
     for sh in sheets:
         if date in sh:
             sheet = sh
@@ -186,18 +191,15 @@ def send_next_lesson(g1, g2):
     delete_message()
     conn = sqlite3.connect("NLB.db")
     cur = conn.cursor()
-    if g1[0] != "":
-        for i in allowedusers:
-            if i[1] == 1:
-                m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
-                logging.info(f"lsn msg to {i[0]}")
-                cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m1, i[0]))
-    if g2[0] != "":
-        for i in allowedusers:
-            if i[1] == 2:
-                m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
-                logging.info(f"lsn msg to {i[0]}")
-                cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m2, i[0]))
+    for i in allowedusers:
+        if i[1] == 1 and g1[0] != "":
+            m1 = bot.send_message(i[0], g1[0] + " в " + g1[1]).message_id
+            logging.info(f"lsn msg to {i[0]}")
+            cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m1, i[0]))
+        elif i[1] == 2 and g2[0] != "":
+            m2 = bot.send_message(i[0], g2[0] + " в " + g2[1]).message_id
+            logging.info(f"lsn msg to {i[0]}")
+            cur.execute("INSERT INTO msgs_dlt1 VALUES(?,?);", (m2, i[0]))
     conn.commit()
     conn.close()
 
@@ -208,7 +210,7 @@ def send_schedule():
     weekday = now.weekday()
     current_date = now.strftime("%Y-%m-%d")
 
-    if (weekday == 6 or weekday <= 2) and current_time == "06:30":
+    if weekday in holidays2 and current_time == "06:30":
         conn = sqlite3.connect("NLB.db")
         cur = conn.cursor()
         cur.execute("SELECT * FROM dlts")
@@ -224,7 +226,8 @@ def send_schedule():
             conn.close()
             logging.info("msg to skosarevv dlt")
 
-    if (weekday >= 5 or weekday<=1) and current_time == "06:30":
+    if weekday in holidays and current_time == "06:30":
+        print(weekday,holidays)
         dlts = bot.send_message(SKOSAREV_ID, "!!!УРА!!!СВОБОДНЫЙ ДЕНЬ!!!").message_id
         conn = sqlite3.connect("NLB.db")
         cur = conn.cursor()
@@ -233,7 +236,7 @@ def send_schedule():
         conn.close()
         logging.info("msg for skosarevv")
         sleep(60)
-    elif 4 >= weekday >= 2:
+    elif weekday not in holidays:
         if current_time == "06:30":
             update_schedule()
             get_schedule(current_date)
@@ -270,7 +273,7 @@ def send_schedule():
             g2 = A2[0]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "09:55":
+        elif current_time == "10:25":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -278,7 +281,7 @@ def send_schedule():
             g2 = A2[1]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "11:15":
+        elif current_time == "12:15":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -286,7 +289,7 @@ def send_schedule():
             g2 = A2[2]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "12:45":
+        elif current_time == "14:05":
             update_schedule()
             get_schedule(current_date)
             update_users()
@@ -294,7 +297,7 @@ def send_schedule():
             g2 = A2[3]
             send_next_lesson(g1, g2)
             sleep(60)
-        elif current_time == "14:10":
+        elif current_time == "16:00":
             delete_message()
             delete_message2()
             sleep(60)
